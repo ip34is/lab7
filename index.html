@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab 4 Animation Example (Bounce + Logs in TXT)</title>
+    <style>
+        body {
+            margin: 0;
+            display: grid;
+            grid-template-rows: 15vh 60vh 10vh 15vh;
+            grid-template-columns: 1fr 3fr 1fr;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+        .block {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            flex-direction: column;
+            position: relative;
+        }
+        .block1 { background-color: #cce4ff; grid-column: 1 / -1; }
+        .block2 { background-color: #ffe4cc; }
+        .block3 { background-color: #ffffff; overflow: hidden; }
+        .block4 { background-color: #ffe4cc; }
+        .block5 { background-color: #e4ffcc; grid-column: 1 / -1; }
+        .block6 { background-color: #cce4ff; grid-column: 1 / -1; }
+
+        button {
+            padding: 6px 10px;
+            font-size: 12px;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+
+        /* Поле анімації */
+        .work {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #f0f0f0;
+            display: none;
+        }
+        .controls {
+            position: absolute;
+            left: 5px; top: 5px; right: 5px; height: 35px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .message-box {
+            margin-left: 10px; flex: 1; font-size: 12px;
+            text-align: left; overflow: hidden;
+            white-space: nowrap; text-overflow: ellipsis;
+        }
+        .anim {
+            position: absolute; left: 5px; bottom: 5px; right: 5px; top: 45px;
+            border: 5px solid orange; background-repeat: repeat;
+        }
+        .square {
+            position: absolute;
+        }
+        .square.small {
+            width: 10px; height: 10px; background-color: red;
+        }
+        .square.big {
+            width: 20px; height: 20px; background-color: green;
+        }
+    </style>
+</head>
+<body>
+
+<div class="block block1">Lorem 1</div>
+<div class="block block2">
+    Lorem 2
+    <button onclick="swapTexts()">Swap Texts (1 і 6)</button>
+    <button onclick="calculateRhombusArea()">Ромб (площа)</button>
+    <form>
+        <label>
+            <input type="checkbox" id="italicToggle" onchange="toggleItalic()"> Italic
+        </label>
+    </form>
+</div>
+
+<div class="block block3">
+    <div class="work" id="workArea">
+        <div class="controls">
+            <div class="message-box" id="messageBox">Повідомлення будуть тут...</div>
+            <button id="closeBtn">close</button>
+        </div>
+        <div class="anim" id="animArea">
+            <div class="square small" id="squareSmall"></div>
+            <div class="square big" id="squareBig"></div>
+        </div>
+    </div>
+</div>
+
+<div class="block block4">
+    <button id="playBtn">play</button>
+</div>
+
+<div class="block block5">
+    Lorem 5
+    <button onclick="checkTriangle()">Check Triangle</button>
+    <button onclick="addListItem(3)">Add List Item to Block 3</button>
+</div>
+
+<div class="block block6">Lorem 6</div>
+
+<script>
+    function swapTexts() {
+        const block1 = document.querySelector('.block1');
+        const block6 = document.querySelector('.block6');
+        const temp = block1.innerHTML.trim();
+        block1.innerHTML = block6.innerHTML.trim();
+        block6.innerHTML = temp;
+    }
+
+    function calculateRhombusArea() {
+        const d1 = parseFloat(prompt("Введіть довжину першої діагоналі:"));
+        const d2 = parseFloat(prompt("Введіть довжину другої діагоналі:"));
+        if (!isNaN(d1) && !isNaN(d2) && d1 > 0 && d2 > 0) {
+            const area = (d1 * d2) / 2;
+            alert("Площа ромба: " + area);
+        } else {
+            alert("Невірні дані!");
+        }
+    }
+
+    function checkTriangle() {
+        const a = parseFloat(prompt("Сторона a:"));
+        const b = parseFloat(prompt("Сторона b:"));
+        const c = parseFloat(prompt("Сторона c:"));
+        if (!isNaN(a) && !isNaN(b) && !isNaN(c) && a > 0 && b > 0 && c > 0) {
+            const canForm = a + b > c && a + c > b && b + c > a;
+            document.cookie = "triangleCheck=" + canForm + "; path=/";
+            alert("Трикутник " + (canForm ? "можна" : "не можна") + " утворити.");
+        } else {
+            alert("Невірні дані!");
+        }
+    }
+
+    window.onload = function () {
+        const cookies = document.cookie.split('; ').find(row => row.startsWith('triangleCheck='));
+        if (cookies) {
+            const value = cookies.split('=')[1];
+            const confirmDelete = confirm(`Результат трикутника (з cookies): ${value}. Видалити cookies?`);
+            if (confirmDelete) {
+                document.cookie = "triangleCheck=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+                location.reload();
+            }
+        }
+    };
+
+    function toggleItalic() {
+        const block2 = document.querySelector('.block2');
+        const isItalic = document.querySelector('#italicToggle').checked;
+        block2.style.fontStyle = isItalic ? 'italic' : 'normal';
+        localStorage.setItem('isItalic', isItalic);
+    }
+
+    window.addEventListener('load', () => {
+        const isItalic = localStorage.getItem('isItalic') === 'true';
+        document.querySelector('.block2').style.fontStyle = isItalic ? 'italic' : 'normal';
+    });
+
+    function addListItem(blockNumber) {
+        const block = document.querySelector(`.block${blockNumber}`);
+        const newItem = prompt("Enter list item text:");
+        if (newItem) {
+            const list = block.querySelector('ol') || document.createElement('ol');
+            if (!block.contains(list)) block.appendChild(list);
+            const listItem = document.createElement('li');
+            listItem.textContent = newItem;
+            listItem.style.color = list.children.length % 2 === 0 ? 'white' : 'black';
+            listItem.style.backgroundColor = list.children.length % 2 === 0 ? 'black' : 'white';
+            list.appendChild(listItem);
+            localStorage.setItem(`block${blockNumber}List`, block.innerHTML);
+        }
+    }
+
+    window.addEventListener('load', () => {
+        for (let i = 1; i <= 6; i++) {
+            const block = document.querySelector(`.block${i}`);
+            const savedList = localStorage.getItem(`block${i}List`);
+            if (savedList) block.innerHTML = savedList;
+        }
+    });
+
+    const workArea   = document.getElementById('workArea');
+    const animArea   = document.getElementById('animArea');
+    const squareSmall= document.getElementById('squareSmall');
+    const squareBig  = document.getElementById('squareBig');
+    const playBtn    = document.getElementById('playBtn');
+    const closeBtn   = document.getElementById('closeBtn');
+    const messageBox = document.getElementById('messageBox');
+
+    playBtn.addEventListener('click', () => {
+        workArea.style.display = 'block';
+        pushEvent("Натиснуто play");
+        createStartStopButtons();
+    });
+
+    closeBtn.addEventListener('click', () => {
+        workArea.style.display = 'none';
+        pushEvent("Натиснуто close");
+    });
+
+    let smallX=0, smallY=0;
+    let bigX=0,   bigY=0;
+    let vxSmall=2, vySmall=2;
+    let vxBig=1,   vyBig=1;
+    let animTimer=null;
+
+    function startAnimation() {
+        resetSquares();
+        pushEvent("Натиснуто start");
+        animTimer = setInterval(moveSquares, 20);
+    }
+    function stopAnimation() {
+        pushEvent("Натиснуто stop");
+        clearInterval(animTimer);
+        animTimer = null;
+    }
+    function resetSquares() {
+        smallX = 0; smallY = 0;
+        bigX   = 0; bigY = animArea.clientHeight - 20;
+        drawSquares();
+    }
+    function drawSquares() {
+        squareSmall.style.left = smallX + "px";
+        squareSmall.style.top  = smallY + "px";
+        squareBig.style.left   = bigX + "px";
+        squareBig.style.top    = bigY + "px";
+    }
+
+    function moveSquares() {
+        smallX += vxSmall;   smallY += vySmall;
+        bigX   += vxBig;     bigY   += vyBig;
+
+        if (smallX < 0) {
+            smallX = 0; vxSmall = -vxSmall;
+            pushEvent("Малий квадрат торкнувся лівої стінки");
+        }
+        if (smallY < 0) {
+            smallY = 0; vySmall = -vySmall;
+            pushEvent("Малий квадрат торкнувся верхньої стінки");
+        }
+        if (smallX + 10 > animArea.clientWidth) {
+            smallX = animArea.clientWidth - 10;
+            vxSmall = -vxSmall;
+            pushEvent("Малий квадрат торкнувся правої стінки");
+        }
+        if (smallY + 10 > animArea.clientHeight) {
+            smallY = animArea.clientHeight - 10;
+            vySmall = -vySmall;
+            pushEvent("Малий квадрат торкнувся нижньої стінки");
+        }
+
+        if (bigX < 0) {
+            bigX = 0; vxBig = -vxBig;
+            pushEvent("Великий квадрат торкнувся лівої стінки");
+        }
+        if (bigY < 0) {
+            bigY = 0; vyBig = -vyBig;
+            pushEvent("Великий квадрат торкнувся верхньої стінки");
+        }
+        if (bigX + 20 > animArea.clientWidth) {
+            bigX = animArea.clientWidth - 20;
+            vxBig = -vxBig;
+            pushEvent("Великий квадрат торкнувся правої стінки");
+        }
+        if (bigY + 20 > animArea.clientHeight) {
+            bigY = animArea.clientHeight - 20;
+            vyBig = -vyBig;
+            pushEvent("Великий квадрат торкнувся нижньої стінки");
+        }
+
+        drawSquares();
+
+        if (checkCollision()) {
+            pushEvent("Зіткнення квадратів — відбилися");
+            bounceSquares();
+        }
+    }
+
+    function checkCollision() {
+        return (
+            smallX < bigX + 20 &&
+            smallX + 10 > bigX &&
+            smallY < bigY + 20 &&
+            smallY + 10 > bigY
+        );
+    }
+
+    function bounceSquares() {
+        let tmpVx = vxSmall;
+        let tmpVy = vySmall;
+        vxSmall   = vxBig;
+        vySmall   = vyBig;
+        vxBig     = tmpVx;
+        vyBig     = tmpVy;
+        smallX += vxSmall;  smallY += vySmall;
+        bigX   += vxBig;    bigY   += vyBig;
+        drawSquares();
+    }
+
+    function createStartStopButtons() {
+        const controls = document.querySelector('.controls');
+        [...controls.querySelectorAll('button')]
+            .filter(btn => btn.id !== 'closeBtn')
+            .forEach(btn => controls.removeChild(btn));
+
+        const startBtn = document.createElement('button');
+        startBtn.textContent = "start";
+        startBtn.id = "startBtn";
+        startBtn.onclick = () => {
+            startBtn.remove();
+            createStopButton();
+            startAnimation();
+        };
+        controls.insertBefore(startBtn, closeBtn);
+    }
+
+    function createStopButton() {
+        const controls = document.querySelector('.controls');
+        const stopBtn = document.createElement('button');
+        stopBtn.textContent = "stop";
+        stopBtn.id = "stopBtn";
+        stopBtn.onclick = () => {
+            stopAnimation();
+            stopBtn.remove();
+            createReloadButton();
+        };
+        controls.insertBefore(stopBtn, closeBtn);
+    }
+
+    function createReloadButton() {
+        const controls = document.querySelector('.controls');
+        const reloadBtn = document.createElement('button');
+        reloadBtn.textContent = "reload";
+        reloadBtn.id = "reloadBtn";
+        reloadBtn.onclick = () => {
+            resetSquares();
+            reloadBtn.remove();
+            createStartStopButtons();
+        };
+        controls.insertBefore(reloadBtn, closeBtn);
+    }
+
+    let eventCounter = 0;
+    function pushEvent(description) {
+        eventCounter++;
+        const localTime = new Date().toLocaleTimeString();
+        messageBox.textContent = description;
+
+        sendToServer(eventCounter, localTime, description);
+    }
+    function sendToServer(id, time, desc) {
+        fetch(`storeEvents.php?id=${id}&time=${encodeURIComponent(time)}&desc=${encodeURIComponent(desc)}`)
+            .then(r => r.text())
+            .then(data => console.log("Записано в txt:", data))
+            .catch(e => console.error(e));
+    }
+
+    const animTexture = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAQAAADZc7J/AAAA...";
+    animArea.style.backgroundImage = `url(${animTexture})`;
+
+</script>
+</body>
+</html>
